@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+# boardcast for square pile
 def board_cast(x, p):
     coor = np.empty(shape=1)
     for i in range(len(x)):
@@ -14,6 +15,10 @@ def board_cast(x, p):
         coor = np.concatenate((coor, None), axis=None)
     return coor[1:-1]
 
+def board_cast_2(x, p):
+    coor = x + p[:, np.newaxis]
+    return coor.T.flatten()
+
 def create_df(x, y, px, py):
     x = board_cast(x, px)
     y = board_cast(y, py)
@@ -24,11 +29,22 @@ def create_df(x, y, px, py):
     return df
 
 '''p = 40
-px = np.array([p/2, -p/2, -p/2, p/2, p/2]) #[p1, p2, p3, ..., p1] local x-coordinate, m
-py = np.array([p/2, p/2, -p/2, -p/2, p/2])
+# px = np.array([p/2, -p/2, -p/2, p/2, p/2]) #[p1, p2, p3, ..., p1] local x-coordinate, m
+# py = np.array([p/2, p/2, -p/2, -p/2, p/2])
+
+# circle
+px = np.array([p/2, -p/2]) #[p1, p2, p3, ..., p1] local x-coordinate, m
+py = np.array([p/2, -p/2])
 
 X = [60,-60]
 Y = [0, 0]
+
+px = px[:, np.newaxis]
+board_cast(X, px)
+board_cast(Y, py)
+
+a = X + px[:, np.newaxis]
+a.T.flatten()
 
 ex = [5, 2]
 ey = [0, -5]
