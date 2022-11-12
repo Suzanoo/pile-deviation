@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import dash_bootstrap_components as dbc
 import dash
-import plotly.express as px
 
 from dash import html, dcc, callback, Input, Output, State, ALL
 
@@ -49,6 +48,7 @@ definition = html.Div([
             dbc.Col([
                 dbc.Input(id=pile_id[i], type='number', placeholder=placeholder_1[i])], width=3, className='mt-2')               
         ])for i in range(2)
+        
     ]),
     html.Div([
         dbc.Row([
@@ -71,7 +71,6 @@ layout = dbc.Container(id='content', children=[
     definition,
     html.Form(id='xy-vector', children=[]),
     dbc.Button('Submit', id='button-2', n_clicks=0, className='btn2 mt-4'),
-    # dcc.Textarea(id='coor-text', value='Hello', style={'width': '50%', 'height': 300}),
 ])
 
 # -------------------------------
@@ -96,16 +95,6 @@ def render_xy_input(n, n_pile):
                     dbc.Col(['Difine error vector for each pile'], width=6)
                 ]),     
             ]),
-            # html.Div([
-            #     dbc.Row([
-            #         dbc.Col([
-            #             dbc.Input(
-            #                 id=f'{label3[j]}-{i+1}',
-            #                 type='number', className='mt-2',
-            #                 placeholder=f'{label3[j]}-{i+1}'),                          
-            #         ])for j in range(4)
-            #     ])for i in range(n_pile)
-            # ]),
             html.Div([
                 dbc.Row([
                     dbc.Col([dbc.Input(type='number', id={'type':'x-coor', 'id':f'x-{i+1}'}, placeholder=f'x-{i+1}', className='mt-2')]),
@@ -114,9 +103,17 @@ def render_xy_input(n, n_pile):
                     dbc.Col([dbc.Input(type='number', id={'type':'y-err', 'id':f'ey-{i+1}'}, placeholder=f'ey-{i+1}', className='mt-2')]),
                 ])for i in range(n_pile)
             ]),
-            # dbc.Button('Submit', id='button-2', n_clicks=0, className='btn2 mt-4'),
-            # dcc.Textarea(id='coor-text', value='Hello', style={'width': '50%', 'height': 300}),
-            dcc.Graph(id='graph', className='pb-4', figure={}),
+            html.Div([
+                dbc.Row([
+                    dbc.Col([
+                        dcc.Graph(id='graph', className='pb-4', figure={}),
+                        dbc.Card(id='result', className='ml-2',
+                            style={
+                                    'width':'50%'
+                                    })
+                    ]),
+                ])
+            ]),         
             html.Hr()
     ])
     # TODO button cannot click if all input not full-fill
@@ -125,6 +122,7 @@ def render_xy_input(n, n_pile):
 # get X-Y coordinate
 @callback(
     Output('graph', 'figure'),
+    Output('result', 'children'),
     Input('button-2', 'n_clicks'),
     State('radio1', 'value'),
     State({'type':'x-coor', 'id':ALL}, 'value'),
@@ -206,14 +204,18 @@ def coor_text(n, type, x, y, ex, ey, B, L, w, d, p):
         # https://stackoverflow.com/questions/69096931/how-do-i-combine-two-plots-into-one-figure-using-plotly
         import plotly.graph_objects as go
         fig = go.Figure()
+
+        # plot footing
         fig.add_trace(go.Scatter(
             x=footing['x'], y=footing['y'], name='footing',
             mode='lines+markers'))
 
+        # plot column
         fig.add_trace(go.Scatter(
             x=column['x'], y=column['y'], name='column',
              mode='lines+markers'))
 
+        # plot piles
         if type == 'sqr':
             fig.add_trace(go.Scatter(
                 x=piles['x'], y=piles['y'], name='drawing',
@@ -239,9 +241,9 @@ def coor_text(n, type, x, y, ex, ey, B, L, w, d, p):
                     x0=PX_NEW[2*i], y0=PY_NEW[2*i], x1=PX_NEW[2*i+1], y1=PY_NEW[2*i+1],
                     line=dict(color='orange', width=2, dash='dash'))
 
-
+        # plot CG
         fig.add_trace(go.Scatter(
-            x=unit_vector['x'], y=unit_vector['y'],
+            x=unit_vector['x'], y=unit_vector['y'], name='C.G.', 
             mode='markers', marker_symbol='cross'))
 
         fig.update_layout(
@@ -250,4 +252,6 @@ def coor_text(n, type, x, y, ex, ey, B, L, w, d, p):
             height = L*4
         )
 
-        return fig
+        return fig, dbc.CardBody([
+                                html.H4(f"New CG : x = {rx}, y = {ry}, norm = {R:.2f} cm."),
+                                ])

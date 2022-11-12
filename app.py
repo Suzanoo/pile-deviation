@@ -1,7 +1,8 @@
 import dash
 import dash_bootstrap_components as dbc
+# import dash_defer_js_import as dji
 
-from dash import html, dcc
+from dash import html
 
 app = dash.Dash(
     __name__,
@@ -11,11 +12,8 @@ app = dash.Dash(
 )
 
 app.layout = html.Div([
-    dcc.Store(
-        id='stored-data',
-        storage_type='session',
-     ),
 	dash.page_container,
+    # dji.Import(src="./assets/script.js"),
 ])
 
 if __name__ == "__main__":
